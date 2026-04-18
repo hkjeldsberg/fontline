@@ -82,29 +82,33 @@ export function segment(source: ImageData, opts: SegmentOptions = DEFAULT_SEGMEN
     .slice(1)
     .filter((b) => b.area >= opts.minArea);
 
-  // Merge dot-on-stem (i, j) — a small component whose x-range is contained within a
-  // larger one's and whose vertical gap is within dotMergeGap.
+  // Merge multi-part glyphs (i/j dot-on-stem, colon/semicolon stacked pieces).
   const merged: typeof keep = [];
   const consumed = new Set<number>();
-  // Sort by area desc so stems win as anchors.
+  // Sort by area desc so the largest piece wins as the initial anchor.
   const byArea = [...keep].sort((a, b) => b.area - a.area);
   for (const anchor of byArea) {
     if (consumed.has(anchor.id)) continue;
     let mergedBox = anchor;
     for (const other of keep) {
       if (other.id === anchor.id || consumed.has(other.id)) continue;
-      // Overlap-based check: the dot of 'i' is often wider than the stem, so strict
-      // containment (±2px) fails. Require ≥40% horizontal overlap with the narrower side.
-      const overlapL = Math.max(other.x, anchor.x);
-      const overlapR = Math.min(other.x + other.width, anchor.x + anchor.width);
-      const withinX = overlapR - overlapL >= Math.min(other.width, anchor.width) * 0.4;
+      // Overlap-based x-check: dot of 'i' is often wider than its stem; colon dots are
+      // equal-sized. Require ≥40% horizontal overlap with the narrower of the two boxes.
+      const overlapL = Math.max(other.x, mergedBox.x);
+      const overlapR = Math.min(other.x + other.width, mergedBox.x + mergedBox.width);
+      const withinX = overlapR - overlapL >= Math.min(other.width, mergedBox.width) * 0.4;
+      // Vertical gap between the two components. Checked against mergedBox so chained
+      // merges (e.g. three-part glyphs) accumulate correctly.
       const gap =
-        other.y + other.height < anchor.y
-          ? anchor.y - (other.y + other.height)
-          : other.y > anchor.y + anchor.height
-            ? other.y - (anchor.y + anchor.height)
+        other.y + other.height < mergedBox.y
+          ? mergedBox.y - (other.y + other.height)
+          : other.y > mergedBox.y + mergedBox.height
+            ? other.y - (mergedBox.y + mergedBox.height)
             : 0;
-      if (withinX && gap <= opts.dotMergeGap) {
+      // Adaptive threshold: colon/semicolon pieces are taller than i-dots so allow a
+      // proportionally larger gap (3× the candidate's height, floored at dotMergeGap).
+      const gapLimit = Math.max(opts.dotMergeGap, other.height * 3);
+      if (withinX && gap <= gapLimit) {
         mergedBox = mergeBox(mergedBox, other);
         consumed.add(other.id);
       }
