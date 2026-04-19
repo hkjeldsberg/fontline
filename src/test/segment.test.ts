@@ -30,7 +30,7 @@ describe('segment', () => {
     drawRect(img, 5, 5, 10, 20);
     drawRect(img, 25, 5, 10, 20);
     drawRect(img, 45, 5, 10, 20);
-    const segs = segment(img, { minArea: 10, dotMergeGap: 5 });
+    const segs = segment(img, { minArea: 10, dotMergeGap: 5, sideMergeGap: 0 });
     expect(segs).toHaveLength(3);
     expect(segs[0]!.bbox.x).toBeLessThan(segs[1]!.bbox.x);
     expect(segs[1]!.bbox.x).toBeLessThan(segs[2]!.bbox.x);
@@ -42,7 +42,7 @@ describe('segment', () => {
     drawRect(img, 10, 20, 4, 30);
     // dot 10 px above
     drawRect(img, 10, 5, 4, 4);
-    const segs = segment(img, { minArea: 5, dotMergeGap: 20 });
+    const segs = segment(img, { minArea: 5, dotMergeGap: 20, sideMergeGap: 0 });
     expect(segs).toHaveLength(1);
     // bbox should span from the dot to the bottom of the stem
     expect(segs[0]!.bbox.y).toBeLessThanOrEqual(5);
@@ -53,7 +53,7 @@ describe('segment', () => {
     const img = blank(30, 30);
     drawRect(img, 5, 5, 10, 10); // area 100
     drawRect(img, 20, 20, 1, 1); // area 1
-    const segs = segment(img, { minArea: 10, dotMergeGap: 0 });
+    const segs = segment(img, { minArea: 10, dotMergeGap: 0, sideMergeGap: 0 });
     expect(segs).toHaveLength(1);
     expect(segs[0]!.bbox.width).toBe(10);
   });
@@ -78,7 +78,7 @@ describe('segment', () => {
     // row 2
     drawRect(img, 10, 60, 10, 10);
     drawRect(img, 40, 60, 10, 10);
-    const segs = segment(img, { minArea: 10, dotMergeGap: 0 });
+    const segs = segment(img, { minArea: 10, dotMergeGap: 0, sideMergeGap: 0 });
     expect(segs).toHaveLength(5);
     expect(segs[0]!.bbox.y).toBe(10);
     expect(segs[2]!.bbox.y).toBe(10);
