@@ -13,10 +13,10 @@ const GROUPS: readonly { label: string; chars: string[] }[] = [
   { label: 'Uppercase', chars: Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ') },
   { label: 'Lowercase', chars: Array.from('abcdefghijklmnopqrstuvwxyz') },
   { label: 'Numbers', chars: Array.from('0123456789') },
-  { label: 'Norwegian', chars: ['Æ', 'Ø', 'Å', 'æ', 'ø', 'å'] },
+  { label: 'Norwegian & accented', chars: ['Æ', 'Ø', 'Å', 'æ', 'ø', 'å', 'é'] },
   {
     label: 'Punctuation',
-    chars: ['!', '?', '.', ',', ':', ';', '-', '_', '(', ')', '"', "'", '@', '#', '&'],
+    chars: ['!', '?', '.', ',', ':', ';', '-', '_', '(', ')', '"', "'", '@', '#', '&', '+', '<'],
   },
 ];
 

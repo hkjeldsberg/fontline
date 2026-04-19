@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Layout } from './app/Layout';
 import { UploadDropzone } from './features/upload/UploadDropzone';
 import { runPipeline, DEFAULT_FILTERS, type FilterSettings } from './features/upload/preprocess';
-import { segment } from './features/segmentation/segment';
+import { segment, LETTER_SEGMENT_OPTIONS, PUNCTUATION_SEGMENT_OPTIONS } from './features/segmentation/segment';
 import { traceCrops } from './features/segmentation/traceClient';
 import { Filmstrip } from './components/Filmstrip';
 import { CharPicker } from './components/CharPicker';
@@ -37,6 +37,7 @@ export default function App() {
   const [manualTarget, setManualTarget] = useState<CharCode | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [filters, _setFilters] = useState<FilterSettings>(DEFAULT_FILTERS);
+  const [punctuationMode, setPunctuationMode] = useState(false);
 
   const hydrateSession = useCallback(
     async (fontId: string) => {
@@ -79,7 +80,8 @@ export default function App() {
       const start = performance.now();
       try {
         const thresholded = runPipeline(image, filters);
-        const segs = segment(thresholded);
+        const segOpts = punctuationMode ? PUNCTUATION_SEGMENT_OPTIONS : LETTER_SEGMENT_OPTIONS;
+        const segs = segment(thresholded, segOpts);
         if (segs.length === 0) {
           setStatus('No glyphs detected — try adjusting contrast or upload a clearer photo.');
           return;
@@ -187,6 +189,20 @@ export default function App() {
               {tab === 'upload' && (
                 <div style={{ display: 'grid', gap: 16, maxWidth: 720 }}>
                   <UploadDropzone onImage={(img) => void handleImage(img)} onError={setStatus} />
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', userSelect: 'none' }}>
+                    <input
+                      type="checkbox"
+                      checked={punctuationMode}
+                      onChange={(e) => setPunctuationMode(e.target.checked)}
+                      style={{ width: 16, height: 16, accentColor: 'var(--accent)', cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: 13 }}>
+                      Punctuation mode{' '}
+                      <span style={{ color: 'var(--muted)' }}>
+                        — use for , . ; : ! " and other small or multi-part characters
+                      </span>
+                    </span>
+                  </label>
                   {status && <div style={{ color: 'var(--muted)', fontSize: 13 }}>{status}</div>}
                 </div>
               )}
@@ -204,7 +220,7 @@ export default function App() {
                   }}
                 />
               )}
-              {tab === 'draw' && manualTarget == null && (
+{tab === 'draw' && manualTarget == null && (
                 <div style={{ color: 'var(--muted)' }}>
                   Pick a character to draw.
                 </div>

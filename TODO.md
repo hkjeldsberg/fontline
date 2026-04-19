@@ -1,4 +1,15 @@
-# FontLine — TODO
+# FontLine 
+## LEGEND
+
+Source of truth: [docs/plans/2026-04-18-001-feat-fontline-mvp-plan.md](docs/plans/2026-04-18-001-feat-fontline-mvp-plan.md)
+
+Status legend: `[ ]` not started · `[~]` in progress · `[x]` done · `[!]` blocked
+
+## TODO 
+- [] Add new tab "Din utvikling" which displays height and weight measurements. They should displayed as interactive graphs, and mobile friendly. Migrate data from the same Supabase project, but from the scheme "barnshli". Table is barnshli.growth_records. The user should also be able to upload new measurements (weight or height).
+
+
+## TODO
 - [x] Add possibility to upload multiple images — `UploadDropzone` now accepts `multiple` files (drag-drop or picker), processes them sequentially, appends all detected crops to `unassigned[]`.
 
 ## TODO
@@ -13,12 +24,6 @@
 ### You need to run this once
 - Apply `supabase/migrations/2026-04-19-001-add-rotation.sql` in the Supabase SQL editor (adds the `rotation` column). Existing rows default to 0°.
 
-
-## LEGEND
-
-Source of truth: [docs/plans/2026-04-18-001-feat-fontline-mvp-plan.md](docs/plans/2026-04-18-001-feat-fontline-mvp-plan.md)
-
-Status legend: `[ ]` not started · `[~]` in progress · `[x]` done · `[!]` blocked
 
 ## Implementation units
 

@@ -33,7 +33,7 @@ export const SUPPORTED_CHARS: readonly string[] = [
   ...'abcdefghijklmnopqrstuvwxyz',
   ...'0123456789',
   'Æ', 'Ø', 'Å', 'æ', 'ø', 'å',
-  '!', '?', '.', ',', ':', ';', '-', '_', '(', ')', '"', "'", '@', '#', '&',
+  '!', '?', '.', ',', ':', ';', '-', '_', '(', ')', '"', "'", '@', '#', '&', '+', '<', 'é',
 ];
 
 export const SUPPORTED_CODEPOINTS: readonly CharCode[] =

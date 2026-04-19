@@ -16,14 +16,27 @@ export interface Segment {
 export interface SegmentOptions {
   /** Drop components smaller than this many ink pixels. */
   minArea: number;
-  /** Merge a small component into a bigger neighbour when its x-range fits within the neighbour's and vertical gap is <= this value. Fixes dotted i/j. */
+  /** Max vertical gap (px) for merging stacked parts — dots on i/j, colon, semicolon. */
   dotMergeGap: number;
+  /** Max horizontal gap (px) for merging side-by-side parts — double quote, etc. 0 = disabled. */
+  sideMergeGap: number;
 }
 
-export const DEFAULT_SEGMENT_OPTIONS: SegmentOptions = {
+/** Tuned for letters: larger minArea rejects speckle, modest merge gaps avoid false joins. */
+export const LETTER_SEGMENT_OPTIONS: SegmentOptions = {
   minArea: 20,
-  dotMergeGap: 50,
+  dotMergeGap: 20,
+  sideMergeGap: 0,
 };
+
+/** Tuned for punctuation: smaller minArea catches tiny dots, larger gaps merge split parts. */
+export const PUNCTUATION_SEGMENT_OPTIONS: SegmentOptions = {
+  minArea: 8,
+  dotMergeGap: 50,
+  sideMergeGap: 50,
+};
+
+export const DEFAULT_SEGMENT_OPTIONS = LETTER_SEGMENT_OPTIONS;
 
 /** Segment a thresholded image into per-glyph crops ordered top-to-bottom, left-to-right. */
 export function segment(source: ImageData, opts: SegmentOptions = DEFAULT_SEGMENT_OPTIONS): Segment[] {
@@ -108,7 +121,30 @@ export function segment(source: ImageData, opts: SegmentOptions = DEFAULT_SEGMEN
       // Adaptive threshold: colon/semicolon pieces are taller than i-dots so allow a
       // proportionally larger gap (3× the candidate's height, floored at dotMergeGap).
       const gapLimit = Math.max(opts.dotMergeGap, other.height * 3);
-      if (withinX && gap <= gapLimit) {
+      const stackMerge = withinX && gap <= gapLimit;
+
+      // Horizontal adjacency: side-by-side strokes forming one glyph (e.g. " or «).
+      // Guards: small x-gap, ≥60% vertical overlap, similar heights (ratio ≥ 0.5).
+      const xGap =
+        other.x + other.width < mergedBox.x
+          ? mergedBox.x - (other.x + other.width)
+          : other.x > mergedBox.x + mergedBox.width
+            ? other.x - (mergedBox.x + mergedBox.width)
+            : 0;
+      const vertOverlap = Math.max(
+        0,
+        Math.min(other.y + other.height, mergedBox.y + mergedBox.height) -
+          Math.max(other.y, mergedBox.y),
+      );
+      const minH = Math.min(other.height, mergedBox.height);
+      const maxH = Math.max(other.height, mergedBox.height);
+      const sideMerge =
+        opts.sideMergeGap > 0 &&
+        xGap <= opts.sideMergeGap &&
+        vertOverlap >= minH * 0.6 &&
+        minH >= maxH * 0.5;
+
+      if (stackMerge || sideMerge) {
         mergedBox = mergeBox(mergedBox, other);
         consumed.add(other.id);
       }

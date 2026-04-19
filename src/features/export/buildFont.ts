@@ -226,6 +226,9 @@ function glyphNameFor(code: number): string {
     0x0040: 'at',
     0x0023: 'numbersign',
     0x0026: 'ampersand',
+    0x002b: 'plus',
+    0x003c: 'less',
+    0x00e9: 'eacute',
   };
   return named[code] ?? `uni${code.toString(16).toUpperCase().padStart(4, '0')}`;
 }
